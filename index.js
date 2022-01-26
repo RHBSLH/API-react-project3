@@ -21,6 +21,7 @@ mongoose
 app.use(express.json())
 
 app.use(cors())
+
 app.use("/api/auth", users)
 app.use("/api/projects",projects)
 app.use("/api/companies",companies)
