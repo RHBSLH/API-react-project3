@@ -1,13 +1,13 @@
 const express = require("express")
 const router = express.Router()
-const { User, signupUserJoi, loginJoi, profileJoi } = require("../models/User")
+const { User, signupUserJoi, loginJoi, profileJoi, profileEditJoi } = require("../models/User")
 const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer")
 const jwt = require("jsonwebtoken")
 const checkUser = require("../middleware/checkUser")
 const validateBody = require("../middleware/validateBody")
 const checkAdmin = require("../middleware/checkAdmin")
-const checkId =require("../middleware/checkId")
+const checkId = require("../middleware/checkId")
 //get users   *Admin*
 
 router.get("/users", checkAdmin, async (req, res) => {
@@ -17,13 +17,13 @@ router.get("/users", checkAdmin, async (req, res) => {
 //by user
 router.post("/signup", validateBody(signupUserJoi), async (req, res) => {
   try {
-    const { fullName, email, password, avatar } = req.body
+    const { userName, email, password, avatar } = req.body
     const userFound = await User.findOne({ email })
     if (userFound) return res.status(400).send("user already registered")
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(password, salt)
     const user = new User({
-      fullName,
+      userName,
       email,
       password: hash,
       avatar,
@@ -77,32 +77,32 @@ router.post("/login", validateBody(loginJoi), async (req, res) => {
 })
 
 router.get("/profile", checkUser, async (req, res) => {
-  const user = await User.findById(req.userId).select("-__v -password")
+  const user = await User.findById(req.userId).select("-__v -password").populate({
+    path: "offers",
+    populate: "projectName",
+  })
   res.json(user)
 })
 
-router.put("/profile", checkUser, validateBody(profileJoi), async (req, res) => {
-  const { fullName, password, avatar, offers } = req.body
+router.put("/profile/:id", checkUser, validateBody(profileEditJoi), async (req, res) => {
+  try {
+    const { userName, avatar } = req.body
 
-  let hash
-  if (password) {
-    salt = await bcrypt.genSalt(10)
-    hash = await bcrypt.hash(password, salt)
+    const user = await User.findByIdAndUpdate(req.params.id, { $set: { userName, avatar } }, { new: true }).select(
+      "-__v -password"
+    )
+    if (!user) return res.status(404).json("user not found")
+    res.json(user)
+  } catch (error) {
+    res.status(500).send(error.message)
   }
-  const user = await User.findByIdAndUpdate(
-    req.userId,
-    { $set: { fullName, password: hash, avatar, offers } },
-    { new: true }
-  ).select("-__v -password")
-
-  res.json(user)
 })
 
 //by users
-router.delete("/:id",checkAdmin, checkId, async (req, res) => {
+router.delete("/:id", checkAdmin, checkId, async (req, res) => {
   try {
     const user = await User.findByIdAndRemove(req.params.id)
-    
+
     if (!user) return res.status(404).json("user not found")
     res.json("user is removed")
   } catch (error) {
@@ -128,7 +128,7 @@ router.delete("/:id",checkAdmin, checkId, async (req, res) => {
 
 router.post("/add-admin", validateBody(signupUserJoi), async (req, res) => {
   try {
-    const {fullName, email, password, avatar } = req.body // م يحتاج نسوي كونست ع طول
+    const { userName, email, password, avatar } = req.body // م يحتاج نسوي كونست ع طول
 
     const userFound = await User.findOne({ email }) // نتحقق من تسجيل المستخدم بالايمل
     if (userFound) return res.status(400).send("user already registered")
@@ -137,7 +137,7 @@ router.post("/add-admin", validateBody(signupUserJoi), async (req, res) => {
     const hash = await bcrypt.hash(password, salt)
 
     const user = new User({
-     fullName,
+      userName,
       email,
       password: hash, //تكون مشفره
       avatar,

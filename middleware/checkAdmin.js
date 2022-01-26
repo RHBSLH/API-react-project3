@@ -9,7 +9,7 @@ const checkAdmin = async (req, res, next) => {
   const userId = decryptedToken.id
 
   const adminFound = await User.findById(userId)
-  if (!adminFound) return res.status(404).send("user not found")
+  if (!adminFound) return res.status(404).send("admin not found")
 
   if (adminFound.role !== "Admin") return res.status(403).send("you are not admin")
 

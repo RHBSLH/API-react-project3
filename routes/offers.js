@@ -8,8 +8,10 @@ const validateBody = require("../middleware/validateBody")
 const { Company } = require("../models/Company")
 const { Offer, offerJoi } = require("../models/Offer")
 const { Project } = require("../models/Project")
+const { User } = require("../models/User")
 
-router.get("/", async (req, res) => {
+
+router.get("/:id", checkAdmin, checkId,async (req, res) => {
   try {
     const offers = await Offer.find().populate("commpanyName").populate("projectName")
     res.json(offers)
@@ -18,11 +20,11 @@ router.get("/", async (req, res) => {
   }
 })
 
-router.get("/:offerId/activate", async (req, res) => {
+router.get("/:offerId/activate", checkAdmin, async (req, res) => {
   try {
-    let activate
-    await Offer.findByIdAndUpdate(req.params.offerId, { $set: { activate: true } })
-    await activate.save()
+    const offer = await Offer.findByIdAndUpdate(req.params.offerId, { $set: { activate: true } })
+    const project = await Project.findById(offer.projectName)
+    await User.findByIdAndUpdate(project.owner, { $push: { offers: req.params.offerId } })
   } catch (error) {
     res.status(500).json(error.message)
   }
@@ -36,15 +38,21 @@ router.post("/:projectId", checkCompany, validateBody(offerJoi), async (req, res
     if (!company.subscription || Date.now() - company.subscription > 0) {
       activated = false
     } else activated = true
+const offerFound= await Offer.findOne({commpanyName: req.companyId , projectName: req.params.projectId,})
+if (offerFound) return res.status(400).json("you already ordered")
 
     const offer = new Offer({
       commpanyName: req.companyId,
-     
-      projectName: req.body.projectName,
-      activated,//   
+
+      projectName: req.params.projectId,
+      activated, //
     })
 
-    await Project.findByIdAndUpdate(req.params.projectId, { $push: { offers: offer._id } })
+    const project = await Project.findById(req.params.projectId)
+
+    await Company.findByIdAndUpdate(req.companyId, { $push: { offers: offer._id } })
+    if (activated) await User.findByIdAndUpdate(project.owner, { $push: { offers: offer._id } })
+
     await offer.save()
     res.json(offer)
   } catch (error) {

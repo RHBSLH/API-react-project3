@@ -25,7 +25,7 @@ app.use("/api/auth", users)
 app.use("/api/projects",projects)
 app.use("/api/companies",companies)
 app.use("/api/projects/comments",comments)
-app.use("/api/projects/offers",offers)
+app.use("/api/offers",offers)
 
 
 

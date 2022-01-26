@@ -13,13 +13,13 @@ const { Comment } = require("../models/Comment")
 
 // all project////
 router.get("/", async (req, res) => {
-  const projects = await Project.find().populate({ path: "offers",populate:"commpanyName" })
+  const projects = await Project.find()
 
   //   .populate({
   //     path:'comments',
   //     populate:{
   //       path:"owner",
-  //       select:"-password -email -likes -role"
+  //       select:"-password -email  -role"
   //     },
   // })
   res.json(projects)
@@ -35,7 +35,7 @@ router.get("/:id", checkId, async (req, res) => {
         path: "comments",
         populate: {
           path: "owner",
-          select: "-password -email -likes -role",
+          select: "-password -email  -role",
         },
       })
 
@@ -62,6 +62,7 @@ router.post("/add-project", checkUser, validateBody(projectAddJoi), async (req, 
       gitHubLink,
       type:"User",
       field,
+      owner:req.userId,
     })
 
     await project.save()
@@ -86,6 +87,7 @@ router.post("/add-project-company", checkCompany, validateBody(projectAddJoi), a
       gitHubLink,
       type:"Company",
       field,
+      owner:req.companyId,
     })
 
     await project.save()
@@ -120,7 +122,7 @@ router.post("/add-project-admain", checkAdmin, validateBody(projectAddJoi), asyn
 })
 
 //edit by user///////
-router.put("/:id", checkUser, checkId, validateBody(projectEditJoi), async (req, res) => {
+router.put("/editUser/:id", checkUser, checkId, validateBody(projectEditJoi), async (req, res) => {
   try {
     const { title, description, image, video, date, demoLink, gitHubLink, type, field } = req.body
     const project = await Project.findByIdAndUpdate(
@@ -152,7 +154,7 @@ router.put("/:id", checkCompany, checkId, validateBody(projectEditJoi), async (r
 })
 
 //edit by admain
-router.put("/:id", checkAdmin, checkId, validateBody(projectEditJoi), async (req, res) => {
+router.put("/admain/:id", checkAdmin, checkId, validateBody(projectEditJoi), async (req, res) => {
   try {
     const { title, description, image, video, date, demoLink, gitHubLink, type, field } = req.body
     const project = await Project.findByIdAndUpdate(

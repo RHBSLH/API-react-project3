@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const Joi = require("joi")
 
 const companySchema = new mongoose.Schema({
-  name: String,
+  companyName: String,
   aboutUs: String,
   projects: [
     {
@@ -28,7 +28,7 @@ const companySchema = new mongoose.Schema({
 
 //sign company joi
 const signupCopmanyJoi = Joi.object({
-  name: Joi.string().min(2).max(100).required(),
+  companyName: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(100).required(),
   logo: Joi.string().uri().min(2).max(100000),
@@ -47,9 +47,10 @@ const subCompanyJoi = Joi.object({
 })
 
 const companyEditProfile = Joi.object({
+  companyName: Joi.string().min(2).max(100).required(),
   aboutUs: Joi.string().min(2).max(1000),
-  projects: Joi.array().items(Joi.objectid()),
-  offers: Joi.array().items(Joi.objectid()),
+  email: Joi.string().email(),
+  logo: Joi.string().uri().min(2).max(100000),
 })
 
 const Company = mongoose.model("Company", companySchema)

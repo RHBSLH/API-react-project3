@@ -2,7 +2,8 @@ const mongoose = require("mongoose")
 const Joi = require("joi")
 
 const offersSchema = new mongoose.Schema({
-   commpanyName:{
+   commpanyName:
+   {
     type: mongoose.Types.ObjectId,
     ref: "Company",
   },

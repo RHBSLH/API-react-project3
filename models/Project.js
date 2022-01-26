@@ -3,6 +3,10 @@ const Joi = require("joi")
 
 
 const projectSchema = new mongoose.Schema({
+  owner:{
+    type: mongoose.Types.ObjectId,
+    ref:"User"
+  },
     title: String,
     description: String,
     image:String,
@@ -23,30 +27,17 @@ const projectSchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Comment",
       },
-    ],
-    likes: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    
-    offers:[
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "Offer",
-    },]
-    
+    ], 
   })
 
   const projectAddJoi = Joi.object({
     title: Joi.string().min(1).max(200).required(),
     description: Joi.string().min(5).max(1000).required(),
-    image: Joi.string().uri().min(2).max(1000).required(),
+    image: Joi.string().uri().min(2).max(10000).required(),
     date:  Joi.string().min(1).max(200).required(),
     demoLink:Joi.string().uri().min(2).max(1000).required(),
     gitHubLink:Joi.string().uri().min(2).max(1000).required(),
-    video:Joi.string().uri().min(2).max(1000),
+    video:Joi.string().uri().allow(""),
     // type: Joi.string().valid("General","User","Company").required(),
     field: Joi.string().valid("Industry", "Commercial","Education","Healthy","Entertainment","culture").required(),
   })
@@ -58,7 +49,7 @@ const projectSchema = new mongoose.Schema({
     date:  Joi.string().min(1).max(200),
     demoLink:Joi.string().uri().min(2).max(1000),
     gitHubLink:Joi.string().uri().min(2).max(1000),
-    video:Joi.string().uri().min(2).max(1000),
+    video:Joi.string().uri().allow(""),
     type: Joi.string().valid("General","User","Company"),
     field: Joi.string().valid("Industry", "Commercial","Education","Healthy","Entertainment","culture"),
   })

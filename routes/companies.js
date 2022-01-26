@@ -14,13 +14,13 @@ const bcrypt = require("bcrypt")
 //sign by  company
 router.post("/signup", validateBody(signupCopmanyJoi), async (req, res) => {
   try {
-    const { name, email, password, logo } = req.body
+    const { companyName, email, password, logo } = req.body
     const userFound = await Company.findOne({ email })
     if (userFound) return res.status(400).send("company already registered")
     const salt = await bcrypt.genSalt(10)
     const hash = await bcrypt.hash(password, salt)
     const user = new Company({
-      name,
+      companyName,
       email,
       password: hash,
       logo,  
@@ -65,17 +65,20 @@ router.get("/", async (req, res) => {
 
 //company get peofile
 router.get("/profile", checkCompany, async (req, res) => {
-  const company = await Company.findById(req.companyId).select("-__v -password")
+  const company = await Company.findById(req.companyId).select("-__v -password").populate({
+    path: "offers",
+    populate: "projectName",
+  })
   res.json(company)
 })
 
 //edit profile
 
-router.put("/:id", checkCompany, checkId, validateBody(companyEditProfile), async (req, res) => {
+router.put("/profile/:id", checkCompany, validateBody(companyEditProfile), async (req, res) => {
   try {
-    const { aboutUs, projects ,offers} = req.body
+    const { aboutUs, logo,companyName } = req.body
 
-    const company = await Company.findByIdAndUpdate(req.params.id, { $set: { aboutUs, projects,offers } }, { new: true })
+    const company = await Company.findByIdAndUpdate(req.params.id, { $set: { aboutUs, logo,companyName } }, { new: true })
     if (!company) return res.status(404).json("company not found")
     res.json(company)
   } catch (error) {
