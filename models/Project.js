@@ -21,13 +21,7 @@ const projectSchema = new mongoose.Schema({
     field:{
     type:String,
     enum: ["Industry", "Commercial","Education","Healthy","Entertainment","culture"],
-    },
-     comments: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Comment",
-      },
-    ], 
+    } 
   })
 
   const projectAddJoi = Joi.object({

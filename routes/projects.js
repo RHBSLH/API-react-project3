@@ -9,19 +9,12 @@ const checkToken = require("../middleware/checkUser")
 const validateBody = require("../middleware/validateBody")
 // const validateId = require("../middleware/validateId")
 const { Project, projectAddJoi, projectEditJoi } = require("../models/Project")
-const { Comment } = require("../models/Comment")
+
 
 // all project////
 router.get("/", async (req, res) => {
   const projects = await Project.find()
 
-  //   .populate({
-  //     path:'comments',
-  //     populate:{
-  //       path:"owner",
-  //       select:"-password -email  -role"
-  //     },
-  // })
   res.json(projects)
 })
 
@@ -30,14 +23,6 @@ router.get("/:id", checkId, async (req, res) => {
   try {
     const project = await project
       .findById(req.params.id)
-
-      .populate({
-        path: "comments",
-        populate: {
-          path: "owner",
-          select: "-password -email  -role",
-        },
-      })
 
     if (!project) return res.status(404).send("project not found")
     res.json(project)
@@ -172,7 +157,7 @@ router.put("/admain/:id", checkAdmin, checkId, validateBody(projectEditJoi), asy
 //delet by just admain
 router.delete("/:id", checkAdmin, checkId, async (req, res) => {
   try {
-    await Comment.deleteMany({ projectId: req.params.id })
+    
 
     const project = await Project.findByIdAndRemove(req.params.id)
     if (!project) return res.status(404).send("project not found")
